@@ -57,10 +57,8 @@ class BoardHistory {
         // HAHAHHAH HOW is this going to happen
         if (this.lastFillIndex !== null) {
             const lastFillArr = this.history[this.lastFillIndex];
-            if (lastFillArr[lastFillArr.length - 1].color == this.dragColor) {
                 lastFillArr.push(block);
                 return this.trimHistory();
-            }
         }
 
         this.history.push([block]);

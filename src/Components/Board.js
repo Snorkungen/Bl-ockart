@@ -120,8 +120,9 @@ class Board extends BaseElement {
     }
 
     clickHandler(event) {
-        if (event.target.constructor.name !== "Block") return;
-
+        
+        if (event.target.localName !== "sk-block") return;
+        
         if(event.ctrlKey) {
             // fill Logic
             return this.fillColor(event.target);
@@ -131,16 +132,16 @@ class Board extends BaseElement {
             return this.copyColor(event);
         }
         // if ((event.ctrlKey && event.shiftKey) || (event.buttons == 2 && event.button == 2)) {
-        //     // Revert Color;
-        //     return event.target.revertColor();
-        // }
-        
-        event.target.setColor(this.activeColor);
-        this.history.click(event.target);
-        return this;
+            //     // Revert Color;
+            //     return event.target.revertColor();
+            // }
+            
+            event.target.setColor(this.activeColor);
+            this.history.click(event.target);
+            return this;
     }
     mouseOverHandler(event) {
-        if (event.target.constructor.name !== "Block") return;
+        if (event.target.localName !== "sk-block") return;
         if (!event.buttons) return;
 
         event.target.setColor(this.activeColor);
