@@ -93,4 +93,5 @@ customElements.define("sk-board", Board);
 customElements.define("sk-block", Block);
 customElements.define("sk-row", Row);
 
+export {Row,Board,Block}
 export default BlockArt;

@@ -137,10 +137,10 @@ class Board extends BaseElement {
             // copy Color;
             return this.copyColor(event);
         }
-        if ((event.ctrlKey && event.shiftKey) || (event.buttons == 2 && event.button == 2)) {
-            // Revert Color;
-            return event.target.revertColor();
-        }
+        // if ((event.ctrlKey && event.shiftKey) || (event.buttons == 2 && event.button == 2)) {
+        //     // Revert Color;
+        //     return event.target.revertColor();
+        // }
 
         this.pushHistory(event.target);
         event.target.setColor(this.activeColor);
