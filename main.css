@@ -1,0 +1,57 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+sk-menu {
+  display: flex;
+  width: 100%;
+  padding: 1rem 0;
+}
+sk-menu > sk-menu-item {
+  display: block;
+  margin: 0 1rem;
+  padding: 0.6rem;
+  border-radius: 6px;
+  background: #343434;
+  color: #c0e8eb;
+  cursor: pointer;
+}
+sk-menu > sk-menu-item:hover {
+  opacity: 0.8;
+}
+sk-menu > sk-menu-item.active {
+  background: #f3ad7e;
+}
+sk-block {
+  display: block;
+  background: pink;
+  transition: all 100ms ease;
+}
+sk-block:hover {
+  border-radius: 25%;
+  cursor: pointer;
+}
+sk-block.active {
+  opacity: 0.2;
+}
+sk-block.active.pallette-color {
+  box-shadow: inset 0 0 10px black;
+}
+sk-block > svg {
+  pointer-events: none;
+}
+sk-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: auto;
+  width: min-content;
+  margin: 0 auto;
+}
+sk-board {
+  display: flex;
+  flex-direction: column;
+  width: min-content;
+  margin: 0 auto;
+}
