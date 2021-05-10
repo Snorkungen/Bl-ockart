@@ -12,19 +12,25 @@ class ArraySk extends Array {
 }
 
 class BoardHistory {
-    constructor() {
-        this.history = new ArraySk();
-        this.maxHistoryLength = 40;
+    constructor(options = {}) {
 
-        this.dragLength = 7;
+        this.history = new ArraySk();
+        this.maxHistoryLength = options.maxHistoryLength || 40;
+
+        this.dragLength = options.dragLength || 10;
         this.dragColor = null;
-        this.lastDragIndex = null;
+
+        this.lastFillIndex = null;
+    }
+
+    remove() {
+        this.history.pop();
+        return this;
     }
 
     trimHistory() {
         if (this.history.length > this.maxHistoryLength) {
             this.history.shift();
-            if(this.lastDragIndex !== null) this.lastDragIndex -= 1;
         }
         return;
     }
@@ -35,8 +41,8 @@ class BoardHistory {
     }
 
     drag(block) {
-        if (this.lastDragIndex !== null) {
-            const lastDragArr = this.history[this.lastDragIndex];
+        if (this.history.last) {
+            const lastDragArr = this.history.last;
             if (lastDragArr.length < this.dragLength && lastDragArr[lastDragArr.length - 1].color == this.dragColor) {
                 lastDragArr.push(block);
                 return this.trimHistory();
@@ -44,12 +50,26 @@ class BoardHistory {
         }
         this.dragColor = block.color;
         this.history.push([block]);
-        this.lastDragIndex = this.history.lastIndex;
         return this.trimHistory();
     }
 
-    fill (block) {
+    fill(block) {
         // HAHAHHAH HOW is this going to happen
+        if (this.lastFillIndex !== null) {
+            const lastFillArr = this.history[this.lastFillIndex];
+            if (lastFillArr[lastFillArr.length - 1].color == this.dragColor) {
+                lastFillArr.push(block);
+                return this.trimHistory();
+            }
+        }
+
+        this.history.push([block]);
+        this.lastFillIndex = this.history.lastIndex;
+
+        return this.trimHistory();
+    }
+    fillReset () {
+        this.lastFillIndex = null;
     }
 
     get state() {

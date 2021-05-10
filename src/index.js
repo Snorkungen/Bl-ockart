@@ -9,7 +9,7 @@ const root = document.getElementById("root");
 root.appendChild(new BlockArtBoard({
     blockAmount : 20,
     blockSize : 20,
-    blockColor : "hotpink"
+    blockColor : "#e0e0e0"
 }));
 
 const test = new History()
@@ -27,5 +27,5 @@ const test = new History()
 //     }))
 // }
 
-console.log(test.state)
-console.log(test.history)
+// console.log(test.state)
+// console.log(test.history)

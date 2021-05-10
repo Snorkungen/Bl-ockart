@@ -1,5 +1,6 @@
 import "./board.scss";
 import {BaseElement,Block} from "./Base"
+import History from "./History";
 
 class Row extends BaseElement {
     constructor({
@@ -41,7 +42,7 @@ class Board extends BaseElement {
 
         this.baseColor = this.blockColor;
 
-        this.history = [];
+        this.history = new History();
 
         this.setRows(this.blockAmount);
 
@@ -92,18 +93,10 @@ class Board extends BaseElement {
     }
 
     revertHistory() {
-        if (this.history.length < 1) return this;
 
-        this.history[this.history.length - 1].revertColor();
-        this.history.pop();
-        return this;
-    }
-
-    pushHistory(block) {
-        const maxHistoryLength = 50;
-
-        this.history.push(block);
-        if (this.history.length > maxHistoryLength) this.history.shift();
+        const state = this.history.state ? this.history.state : [];
+        state.forEach((block) => block.revertColor());
+        this.history.remove()
         return this;
     }
 
@@ -141,16 +134,17 @@ class Board extends BaseElement {
         //     // Revert Color;
         //     return event.target.revertColor();
         // }
-
-        this.pushHistory(event.target);
+        
         event.target.setColor(this.activeColor);
+        this.history.click(event.target);
         return this;
     }
     mouseOverHandler(event) {
         if (event.target.constructor.name !== "Block") return;
         if (!event.buttons) return;
-        this.pushHistory(event.target);
+
         event.target.setColor(this.activeColor);
+        this.history.drag(event.target);
         return this;
     }
     wheelHandler(event) {
@@ -171,24 +165,28 @@ class Board extends BaseElement {
 
 
     // Complicated shit that doesnt work
-    fillRowColor (target,activeColor) {
+    fillRowColor (target,activeColor,history) {
         const targetColor = target.color
         // const activeColor = this.activeColor;
         function recursiveN (block) {
             if(!block) return;
              if(block.color !== targetColor) return;
             block.setColor(activeColor);
+            history.fill(block)
             return recursiveN(block.nextSibling);
         };
         function recursiveP (block) {
             if(!block) return;
              if(block.color !== targetColor) return;
             block.setColor(activeColor);
+            history.fill(block)
             return recursiveP(block.previousSibling);
 
         };
 
         target.setColor(activeColor);
+        history.fill(target);
+
         recursiveN(target.nextSibling)
         recursiveP(target.previousSibling)
     }
@@ -197,28 +195,30 @@ class Board extends BaseElement {
         const targetColor = target.color;
         const activeColor = this.activeColor;
         const targetIndex = target.blockIndex;
-
+        const history = this.history;
         const fillRowColor = this.fillRowColor; 
 
         function recursiveN (row) {
             if(!row) return;
             const block = row.children[targetIndex];
             if(block.color !== targetColor) return;
-            fillRowColor(block,activeColor);
+            fillRowColor(block,activeColor,history);
             return recursiveN(row.nextSibling);
         };
         function recursiveP (row) {
             if(!row) return;
             const block = row.children[targetIndex];
             if(block.color !== targetColor) return;
-            fillRowColor(block,activeColor);
+            fillRowColor(block,activeColor,history);
             return recursiveP(row.previousSibling);
         };
 
-
-        this.fillRowColor(target,activeColor);
+        
+        this.fillRowColor(target,activeColor,history);
         recursiveN(target.parentNode.nextSibling);
         recursiveP(target.parentNode.previousSibling);
+
+        this.history.fillReset();
     }
 
 }
