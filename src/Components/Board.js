@@ -1,5 +1,8 @@
 import "./board.scss";
-import {BaseElement,Block} from "./Base"
+import {
+    BaseElement,
+    Block
+} from "./Base"
 import History from "./History";
 
 class Row extends BaseElement {
@@ -20,7 +23,7 @@ class Row extends BaseElement {
             this.appendChild(new Block({
                 blockSize: this.blockSize,
                 blockColor: this.blockColor,
-                index : i
+                index: i
             }))
         }
     }
@@ -47,7 +50,7 @@ class Board extends BaseElement {
         this.setRows(this.blockAmount);
 
         this.setGap(0)
-        
+
         // EventListeners
         this.addEventListener("mousedown", this.clickHandler);
         this.addEventListener("mouseover", this.mouseOverHandler)
@@ -72,6 +75,45 @@ class Board extends BaseElement {
         return this;
     }
 
+    scaleBoard(scaleSize) {
+        let increaseSizeBoolean = scaleSize > 0 ? true : false;
+
+        if (increaseSizeBoolean) {
+            // Increase size
+
+            this.forEachRow((row) => {
+                for (let index = 0; index < scaleSize; index++) {
+                    row.appendChild(new Block({
+                        blockSize: this.blockSize,
+                        blockColor: this.blockColor,
+                        index: this.blockAmount + index
+                    }));
+                }
+            });
+
+            this.appendChild(new Row({
+                blockAmount: this.blockAmount + scaleSize,
+                blockColor: this.blockColor,
+                blockSize: this.blockSize
+            }));
+        } else {
+            // Decrease size
+
+            this.forEachRow((row) => {
+                for (let index = 0; index < (scaleSize * -1); index++) {
+                    row.children[row.children.length - 1].remove();
+                }
+            });
+            for (let index = 0; index < (scaleSize * -1); index++) {
+                this.children[this.children.length - 1].remove();
+            }
+        }
+
+        this.blockAmount += scaleSize;
+        this.setGap(this.currgap)
+        // console.log(increaseSizeBoolean)
+    }
+
     saveBoardState() {
         const blockData = [];
         this.forEachBlock((block, {
@@ -81,14 +123,15 @@ class Board extends BaseElement {
             blockData.push({
                 x,
                 y,
-                color: block.color
+                color: block.color,
+                colors: block.colors
             })
         });
         return blockData;
     }
-    toggleGap () {
+    toggleGap() {
         let gap = 0;
-        if(this.gap === 0) gap = 1;
+        if (this.gap === 0) gap = 1;
         return this.setGap(gap)
     }
 
@@ -102,7 +145,7 @@ class Board extends BaseElement {
 
     setGap(gap) {
         this.gap = gap;
-        this.forEachRow((row) =>{
+        this.forEachRow((row) => {
             row.gap = gap;
         })
     }
@@ -120,10 +163,10 @@ class Board extends BaseElement {
     }
 
     clickHandler(event) {
-        
+
         if (event.target.localName !== "sk-block") return;
-        
-        if(event.ctrlKey) {
+
+        if (event.ctrlKey) {
             // fill Logic
             return this.fillColor(event.target);
         }
@@ -132,20 +175,18 @@ class Board extends BaseElement {
             return this.copyColor(event);
         }
         // if ((event.ctrlKey && event.shiftKey) || (event.buttons == 2 && event.button == 2)) {
-            //     // Revert Color;
-            //     return event.target.revertColor();
-            // }
-            
-            event.target.setColor(this.activeColor);
-            this.history.click(event.target);
-            return this;
+        //     // Revert Color;
+        //     return event.target.revertColor();
+        // }
+
+        if (event.target.setColor(this.activeColor)) this.history.click(event.target);
+        return this;
     }
     mouseOverHandler(event) {
         if (event.target.localName !== "sk-block") return;
         if (!event.buttons) return;
 
-        event.target.setColor(this.activeColor);
-        this.history.drag(event.target);
+        if (event.target.setColor(this.activeColor)) this.history.drag(event.target);
         return this;
     }
     wheelHandler(event) {
@@ -166,21 +207,20 @@ class Board extends BaseElement {
 
 
     // Complicated shit that doesnt work
-    fillRowColor (target,activeColor,history) {
+    fillRowColor(target, activeColor, history) {
         const targetColor = target.color
         // const activeColor = this.activeColor;
-        function recursiveN (block) {
-            if(!block) return;
-             if(block.color !== targetColor) return;
-            block.setColor(activeColor);
-            history.fill(block)
+        function recursiveN(block) {
+            if (!block) return;
+            if (block.color !== targetColor) return;
+            if(block.setColor(activeColor)) history.fill(block)
             return recursiveN(block.nextSibling);
         };
-        function recursiveP (block) {
-            if(!block) return;
-             if(block.color !== targetColor) return;
-            block.setColor(activeColor);
-            history.fill(block)
+
+        function recursiveP(block) {
+            if (!block) return;
+            if (block.color !== targetColor) return;
+            if(block.setColor(activeColor)) history.fill(block)
             return recursiveP(block.previousSibling);
 
         };
@@ -197,25 +237,26 @@ class Board extends BaseElement {
         const activeColor = this.activeColor;
         const targetIndex = target.blockIndex;
         const history = this.history;
-        const fillRowColor = this.fillRowColor; 
+        const fillRowColor = this.fillRowColor;
 
-        function recursiveN (row) {
-            if(!row) return;
+        function recursiveN(row) {
+            if (!row) return;
             const block = row.children[targetIndex];
-            if(block.color !== targetColor) return;
-            fillRowColor(block,activeColor,history);
+            if (block.color !== targetColor) return;
+            fillRowColor(block, activeColor, history);
             return recursiveN(row.nextSibling);
         };
-        function recursiveP (row) {
-            if(!row) return;
+
+        function recursiveP(row) {
+            if (!row) return;
             const block = row.children[targetIndex];
-            if(block.color !== targetColor) return;
-            fillRowColor(block,activeColor,history);
+            if (block.color !== targetColor) return;
+            fillRowColor(block, activeColor, history);
             return recursiveP(row.previousSibling);
         };
 
-        
-        this.fillRowColor(target,activeColor,history);
+
+        this.fillRowColor(target, activeColor, history);
         recursiveN(target.parentNode.nextSibling);
         recursiveP(target.parentNode.previousSibling);
 

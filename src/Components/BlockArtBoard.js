@@ -79,6 +79,8 @@ class BlockArt extends BaseElement {
         });
         createElement(this,"button","content=Toggle Gap").addEventListener("click",(event)=>event.target.parentNode.board.toggleGap())
         createElement(this,"button","content=Log Board State").addEventListener("click",(event)=>console.log(event.target.parentNode.board.saveBoardState()))
+        createElement(this,"button","content=Scale +").addEventListener("click",(event)=>event.target.parentNode.board.scaleBoard(1))
+        createElement(this,"button","content=Scale -").addEventListener("click",(event)=>event.target.parentNode.board.scaleBoard(-1))
 
         this.appendChild(this.colorPalette);
         this.appendChild(this.board);

@@ -62,8 +62,9 @@ class BoardHistory {
                 return this.trimHistory();
             }
             else {
-                console.log(this.lastFillIndex)
-                console.log(this.history)
+                console.error("Some random error if i cant debug")
+                // console.log(this.lastFillIndex)
+                // console.log(this.history)
             }
         }
 

@@ -73,10 +73,10 @@ class Block extends HTMLElement {
         return this;
     }
     setColor(color) {
-        if (this.color === color) return this;
+        if (this.color === color) return false;
         this.color = color;
         this.style.background = this.color;
-        if (this.colors[this.colors.length - 1] === this.color) return this;
+        if (this.colors[this.colors.length - 1] === this.color) return false;
         this.colors.push(color);
         return this;
     }
