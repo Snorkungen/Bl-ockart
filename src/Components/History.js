@@ -57,8 +57,14 @@ class BoardHistory {
         // HAHAHHAH HOW is this going to happen
         if (this.lastFillIndex !== null) {
             const lastFillArr = this.history[this.lastFillIndex];
+            if(lastFillArr) {
                 lastFillArr.push(block);
                 return this.trimHistory();
+            }
+            else {
+                console.log(this.lastFillIndex)
+                console.log(this.history)
+            }
         }
 
         this.history.push([block]);
