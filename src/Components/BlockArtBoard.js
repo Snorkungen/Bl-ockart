@@ -1,10 +1,26 @@
 import "./board.scss"
-import {createElement} from "../modules/createElement";
-import {BaseElement,Block} from "./Base"
-import {Row,Board} from "./Board";
+import {
+    createElement
+} from "../modules/createElement";
+import {
+    BaseElement,
+    Block
+} from "./Base"
+import {
+    Row,
+    Board
+} from "./Board";
+import Router, {
+    LcAPi
+} from "./Router"
 const randomRGB = () => {
 
     return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
+}
+
+function getParent(el, elName) {
+    if (el.localName === elName) return el;
+    return getParent(el.parentNode, elName);
 }
 
 class ColorPalette extends BaseElement {
@@ -77,15 +93,23 @@ class BlockArt extends BaseElement {
             this.colorPalette.setActiveColor(color);
             return this;
         });
-        createElement(this,"button","content=Toggle Gap").addEventListener("click",(event)=>event.target.parentNode.board.toggleGap())
-        createElement(this,"button","content=Log Board State").addEventListener("click",(event)=>console.log(event.target.parentNode.board.saveBoardState()))
-        createElement(this,"button","content=Scale +").addEventListener("click",(event)=>event.target.parentNode.board.scaleBoard(1))
-        createElement(this,"button","content=Scale -").addEventListener("click",(event)=>event.target.parentNode.board.scaleBoard(-1))
+        createElement(this, "button", "content=Toggle Gap").addEventListener("click", (event) => event.target.parentNode.board.toggleGap())
+        createElement(this, "button", "content=Save Board").addEventListener("click", this.saveBoard)
+        createElement(this, "button", "content=Scale +").addEventListener("click", (event) => event.target.parentNode.board.scaleBoard(1))
+        createElement(this, "button", "content=Scale -").addEventListener("click", (event) => event.target.parentNode.board.scaleBoard(-1))
 
         this.appendChild(this.colorPalette);
         this.appendChild(this.board);
 
         this.board.toggleGap()
+    }
+    saveBoard(event) {
+        const target = getParent(this, "sk-bl-ockart");
+        const boardState = target.board.saveBoardState();
+        
+        const lcApi = new LcAPi("BoardStates");
+
+        lcApi.saveNewBoard(boardState)
     }
 }
 
@@ -95,5 +119,9 @@ customElements.define("sk-board", Board);
 customElements.define("sk-block", Block);
 customElements.define("sk-row", Row);
 
-export {Row,Board,Block}
+export {
+    Row,
+    Board,
+    Block
+}
 export default BlockArt;
