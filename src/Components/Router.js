@@ -37,10 +37,28 @@ class LcAPi {
 }
 
 class BoardRouter {
-    constructor() {
+    constructor(blockArtBoard) {
+        this.blockArtBoard = blockArtBoard;
         this.LcAPi = new LcAPi("BoardStates");
-        console.log(this.LcAPi)
+        this.__initRoute();
     }
+    __initRoute () {
+        const search = window.location.search;
+        const id = search.substr(1).split("id=")[1];
+
+        return this.loadBoard(id);
+    }
+
+    loadBoard (id) {
+        if(!!!id) return;
+ 
+        const boardState = this.LcAPi[parseInt(id)];
+
+        if(!!!boardState) return ;
+
+        this.blockArtBoard.__initState(boardState)
+    }
+
 }
 
 export {

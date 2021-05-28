@@ -52,6 +52,14 @@ class ColorPalette extends BaseElement {
                 if (this.updateActiveColor) this.updateActiveColor(block.color);
             })
         });
+
+    }
+    resetColorPallette (paletteColors) {
+        this.paletteColors = paletteColors;
+
+        this.forEachBlock((block,{x}) => block.setColor(this.paletteColors[x]))
+
+        this.setActiveColor(this.paletteColors[0]);
     }
 
     setUpdateActiveColorFunction(cb) {
@@ -103,9 +111,18 @@ class BlockArt extends BaseElement {
 
         this.board.toggleGap()
     }
+    __initState (boardState) {
+        this.colorPalette.resetColorPallette(boardState.paletteColors);
+        this.board.__initState(boardState);
+    }
     saveBoard(event) {
         const target = getParent(this, "sk-bl-ockart");
-        const boardState = target.board.saveBoardState();
+        const boardState = {
+            size : target.blockAmount,
+            paletteColors : target.paletteColors,
+            gap: target.board.gap,
+            blockValues : target.board.saveBoardState()
+        };
         
         const lcApi = new LcAPi("BoardStates");
 

@@ -5,12 +5,12 @@ import Router from "./Components/Router";
 const root = document.getElementById("root");
 
 
-
-
-root.appendChild(new BlockArtBoard({
-    blockAmount : 20,
+const blockArtBoard = new BlockArtBoard({
+    blockAmount : 23,
     blockSize : 20,
     blockColor : "#e0e0e0"
-}));
+});
 
-const test = new Router();
+root.appendChild(blockArtBoard);
+
+const test = new Router(blockArtBoard);

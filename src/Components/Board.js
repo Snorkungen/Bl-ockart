@@ -213,14 +213,14 @@ class Board extends BaseElement {
         function recursiveN(block) {
             if (!block) return;
             if (block.color !== targetColor) return;
-            if(block.setColor(activeColor)) history.fill(block)
+            if (block.setColor(activeColor)) history.fill(block)
             return recursiveN(block.nextSibling);
         };
 
         function recursiveP(block) {
             if (!block) return;
             if (block.color !== targetColor) return;
-            if(block.setColor(activeColor)) history.fill(block)
+            if (block.setColor(activeColor)) history.fill(block)
             return recursiveP(block.previousSibling);
 
         };
@@ -262,7 +262,21 @@ class Board extends BaseElement {
 
         this.history.fillReset();
     }
+    __initState(boardState) {
+        this.scaleBoard(boardState.size - this.blockAmount)
 
+        console.log(boardState.blockValues);
+
+
+        for (let i = 0; i < boardState.blockValues.length; i++) {
+            const {
+                x,y,color,colors
+            } = boardState.blockValues[i];
+
+            this.children[y].children[x].setColor(color);
+            this.children[y].children[x].colors = colors;
+        }
+    }
 }
 
 export {
