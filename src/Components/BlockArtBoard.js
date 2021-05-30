@@ -4,7 +4,8 @@ import {
 } from "../modules/createElement";
 import {
     BaseElement,
-    Block
+    Block,
+    getParent
 } from "./Base"
 import {
     Row,
@@ -16,11 +17,6 @@ import Router, {
 const randomRGB = () => {
 
     return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
-}
-
-function getParent(el, elName) {
-    if (el.localName === elName) return el;
-    return getParent(el.parentNode, elName);
 }
 
 class ColorPalette extends BaseElement {
@@ -124,6 +120,7 @@ class BlockArt extends BaseElement {
         createElement(this.funcButtonContainer, "button", "content=Save Board").addEventListener("click", this.saveBoard)
         createElement(this.funcButtonContainer, "button", "content=Scale +").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(1))
         createElement(this.funcButtonContainer, "button", "content=Scale -").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(-1))
+        createElement(this.funcButtonContainer, "button", "content=ToggleBrush").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleBrushFill())
 
         this.navbar.appendChild(this.colorPalette);
         this.appendChild(this.board);
@@ -149,7 +146,7 @@ class BlockArt extends BaseElement {
             const id = search.substr(1).split("id=")[1];
             return lcApi.updateBoard(Number(id), boardState)
         }
-
+        alert("Board Saved!");
         return lcApi.saveNewBoard(boardState)
     }
 }

@@ -1,8 +1,13 @@
 import "./board.scss";
 import {
     BaseElement,
-    Block
-} from "./Base"
+    Block,
+    getParent,
+    BrushTooltip
+} from "./Base";
+import {
+    createElement
+} from "../modules/createElement";
 import History from "./History";
 
 class Row extends BaseElement {
@@ -49,7 +54,11 @@ class Board extends BaseElement {
 
         this.setRows(this.blockAmount);
 
-        this.setGap(0)
+        // this.setGap(0)
+
+        // Overcomplicating Things but it's a fun challenge
+        this.brushFillToggle = false;
+        this.brushFillSize = 3;
 
         // EventListeners
         this.addEventListener("mousedown", this.clickHandler);
@@ -74,7 +83,8 @@ class Board extends BaseElement {
         }
         return this;
     }
-    scaleBlocks (blockSize) {
+    scaleBlocks(blockSize) {
+        this.blockSize = blockSize;
         this.forEachBlock((block) => {
             block.setSize(blockSize);
         })
@@ -184,12 +194,21 @@ class Board extends BaseElement {
         //     return event.target.revertColor();
         // }
 
+
+        if (this.brushFillToggle) {
+            return this.brushFill(event.target)
+        }
+
         if (event.target.setColor(this.activeColor)) this.history.click(event.target);
         return this;
     }
     mouseOverHandler(event) {
         if (event.target.localName !== "sk-block") return;
         if (!event.buttons) return;
+
+        if (this.brushFillToggle) {
+            return this.brushFill(event.target)
+        }
 
         if (event.target.setColor(this.activeColor)) this.history.drag(event.target);
         return this;
@@ -267,12 +286,71 @@ class Board extends BaseElement {
 
         this.history.fillReset();
     }
+    toggleBrushFill() {
+
+        if (this.brushFillToggle) {
+            if (this.brushTooltip) {
+                this.brushTooltip.remove();
+            }
+            return this.brushFillToggle = false;
+        }
+
+        this.brushTooltip= new BrushTooltip({
+            color: "black",
+            size: Math.round(this.blockSize * this.brushFillSize)
+        })
+
+        document.body.appendChild(this.brushTooltip)
+
+        return this.brushFillToggle = true;
+    }
+    brushFill(target) {
+        const fillAmountPerSide = Math.floor((this.brushFillSize - 1) / 2);
+        const activeColor = this.activeColor;
+        const targetIndex = target.blockIndex;
+        const history = this.history;
+
+        function rY(row, sw, blockIndex, ttl) {
+            if (ttl <= 0 || !row) return;
+            const block = row.children[blockIndex];
+
+            if (block.setColor(activeColor)) history.fill(block);
+
+            return rY(sw === "P" ? row.previousSibling : row.nextSibling, sw, blockIndex, ttl - 1);
+        }
+
+        function rX(block, sw, ttl) {
+            if (ttl <= 0 || !block) return;
+
+            rY(block.parentNode.previousSibling, "P", block.blockIndex, ttl);
+            rY(block.parentNode.nextSibling, "N", block.blockIndex, ttl);
+
+            if (block.setColor(activeColor)) history.fill(block);
+            return rX(sw === "P" ? block.previousSibling : block.nextSibling, sw, ttl - 1);
+        }
+
+        rX(target.previousSibling, "P", fillAmountPerSide);
+        rX(target.nextSibling, "N", fillAmountPerSide);
+
+        rY(target.parentNode.previousSibling, "P", targetIndex, fillAmountPerSide);
+        rY(target.parentNode.nextSibling, "N", targetIndex, fillAmountPerSide);
+
+        if (target.setColor(activeColor)) history.fill(target);
+
+        return this.history.fillReset();
+    }
+
+
+
     __initState(boardState) {
         this.scaleBoard(boardState.size - this.blockAmount);
-
+        this.activeColor = boardState.paletteColors[0]
         for (let i = 0; i < boardState.blockValues.length; i++) {
             const {
-                x,y,color,colors
+                x,
+                y,
+                color,
+                colors
             } = boardState.blockValues[i];
 
             this.children[y].children[x].setColor(color);

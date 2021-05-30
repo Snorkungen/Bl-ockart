@@ -1,4 +1,7 @@
-
+function getParent(el, elName) {
+    if (el.localName === elName) return el;
+    return getParent(el.parentNode, elName);
+}
 
 class BaseElement extends HTMLElement {
     constructor({
@@ -13,7 +16,7 @@ class BaseElement extends HTMLElement {
 
         this.activeColor = this.blockColor;
     }
-    get gap () {
+    get gap() {
         return this.currgap
     }
     set gap(gap) {
@@ -25,7 +28,7 @@ class BaseElement extends HTMLElement {
         let w = window.innerWidth
 
 
-        if(this.parentNode && this.parentNode.navbar) {
+        if (this.parentNode && this.parentNode.navbar) {
             h -= this.parentNode.navbar.clientHeight;
         }
 
@@ -66,7 +69,7 @@ class Block extends HTMLElement {
     }) {
         super();
 
-        if(index || index === 0) this.blockIndex = index
+        if (index || index === 0) this.blockIndex = index
 
         this.colors = [];
 
@@ -96,7 +99,43 @@ class Block extends HTMLElement {
     }
 }
 
+class BrushTooltip extends HTMLElement {
+    constructor({
+        color,
+        size
+    }) {
+        super();
+
+        this.id = "brush";
+        this.size = size;
+        this.color = "#323232"
+
+        this.style.display = "block";
+        this.style.position = "absolute";
+        this.style.width = size + "px";
+        this.style.height = size + "px";
+
+        this.style.borderRadius = "30%"
+        this.style.border = `thin solid ${this.color}`;
+
+        window.addEventListener("mousemove", this.mouseMoveHandler)
+    }
+    set pos ([x,y]) {
+        this.style.left = (x - (this.size / 2)) + "px";
+        this.style.top = (y - (this.size / 2)) + "px"
+    }
+    mouseMoveHandler(event) {
+        let x = document.getElementById("brush");
+        if(!x) return
+        x.pos = [event.pageX,event.pageY];
+    }
+}
+
+customElements.define("sk-brush", BrushTooltip);
+
 export {
     Block,
-    BaseElement
+    BaseElement,
+    getParent,
+    BrushTooltip
 }
