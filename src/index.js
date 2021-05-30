@@ -6,8 +6,8 @@ const root = document.getElementById("root");
 
 
 const blockArtBoard = new BlockArtBoard({
-    blockAmount : 23,
-    blockSize : 20,
+    blockAmount : 40,
+    blockSize : 10,
     blockColor : "#e0e0e0"
 });
 

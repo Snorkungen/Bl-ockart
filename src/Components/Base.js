@@ -21,9 +21,17 @@ class BaseElement extends HTMLElement {
         this.style.gap = `${this.currgap}px`;
     }
     getMaximumBlockSize() {
-        const smallestN = window.innerWidth < window.innerHeight ? window.innerWidth : window.innerHeight;
+        let h = window.innerHeight;
+        let w = window.innerWidth
 
-        return Math.floor(smallestN / this.blockAmount);
+
+        if(this.parentNode && this.parentNode.navbar) {
+            h -= this.parentNode.navbar.clientHeight;
+        }
+
+        const smallestN = w < h ? w : h;
+
+        return Math.floor(smallestN / this.blockAmount - 2);
     }
     setActiveColor(color) {
         this.activeColor = color;

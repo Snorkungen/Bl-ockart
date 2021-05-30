@@ -74,7 +74,11 @@ class Board extends BaseElement {
         }
         return this;
     }
-
+    scaleBlocks (blockSize) {
+        this.forEachBlock((block) => {
+            block.setSize(blockSize);
+        })
+    }
     scaleBoard(scaleSize) {
         let increaseSizeBoolean = scaleSize > 0 ? true : false;
 
@@ -110,7 +114,8 @@ class Board extends BaseElement {
         }
 
         this.blockAmount += scaleSize;
-        this.setGap(this.currgap)
+        this.setGap(this.currgap);
+        return this.scaleBlocks(this.getMaximumBlockSize())
         // console.log(increaseSizeBoolean)
     }
 
@@ -263,10 +268,7 @@ class Board extends BaseElement {
         this.history.fillReset();
     }
     __initState(boardState) {
-        this.scaleBoard(boardState.size - this.blockAmount)
-
-        console.log(boardState.blockValues);
-
+        this.scaleBoard(boardState.size - this.blockAmount);
 
         for (let i = 0; i < boardState.blockValues.length; i++) {
             const {

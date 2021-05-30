@@ -2,6 +2,27 @@
     padding: 0;
     margin: 0;
 }
+
+
+
+#blockArtNavbar {
+    display: flex;
+    justify-content: space-around;
+
+    padding: 1rem;
+
+    background: #343434;
+
+
+    #activeColorBlock {
+        margin: 0 1rem;
+    }
+}
+
+
+
+
+
 sk- {
 
     &menu {

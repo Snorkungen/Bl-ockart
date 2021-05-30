@@ -28,7 +28,11 @@ class ColorPalette extends BaseElement {
         super(props);
 
         this.activeColorBlock = new Block(props);
-        this.availableColorsRow = new Row(props);
+        this.availableColorsRow = new Row({
+            blockSize : props.blockSize,
+            blockColor : props.blockColor,
+            blockAmount : props.paletteColors.length
+        });
 
 
         this.paletteColors = props.paletteColors;
@@ -36,14 +40,16 @@ class ColorPalette extends BaseElement {
         this.style.display = "flex";
         this.style.flexDirection = "row";
 
+        this.activeColorBlock.id = "activeColorBlock"
+        this.activeColorBlock.setSize(this.getMaximumBlockSize())
 
         this.appendChild(this.activeColorBlock);
         this.appendChild(this.availableColorsRow);
         this.forEachBlock((block, {
             x
         }) => {
-            const blockSize = Math.floor(this.getMaximumBlockSize() / 1.2);
-            block.setSize(blockSize);
+            // const blockSize = Math.floor(this.getMaximumBlockSize() / 1.2);
+            block.setSize(this.getMaximumBlockSize());
             block.setColor(this.paletteColors[x]);
             block.addEventListener("click", ({
                 target: block
@@ -54,10 +60,12 @@ class ColorPalette extends BaseElement {
         });
 
     }
-    resetColorPallette (paletteColors) {
+    resetColorPallette(paletteColors) {
         this.paletteColors = paletteColors;
 
-        this.forEachBlock((block,{x}) => block.setColor(this.paletteColors[x]))
+        this.forEachBlock((block, {
+            x
+        }) => block.setColor(this.paletteColors[x]))
 
         this.setActiveColor(this.paletteColors[0]);
     }
@@ -78,13 +86,18 @@ class BlockArt extends BaseElement {
     constructor(props) {
         super(props);
 
-        this.paletteColors = new Array(this.blockAmount).fill(0).map(() => randomRGB());
+        this.palletteColorAmount = 12;
+
+        this.paletteColors = new Array(this.palletteColorAmount).fill(0).map(() => randomRGB());
 
         this.colorPalette = new ColorPalette({
             ...props,
             paletteColors: this.paletteColors
         });
-        this.board = new Board(props);
+        this.board = new Board({
+            ...props,
+            blockSize : this.getMaximumBlockSize()
+        });
 
         this.activeColor = this.paletteColors[0]
 
@@ -101,32 +114,42 @@ class BlockArt extends BaseElement {
             this.colorPalette.setActiveColor(color);
             return this;
         });
-        createElement(this, "button", "content=Toggle Gap").addEventListener("click", (event) => event.target.parentNode.board.toggleGap())
-        createElement(this, "button", "content=Save Board").addEventListener("click", this.saveBoard)
-        createElement(this, "button", "content=Scale +").addEventListener("click", (event) => event.target.parentNode.board.scaleBoard(1))
-        createElement(this, "button", "content=Scale -").addEventListener("click", (event) => event.target.parentNode.board.scaleBoard(-1))
 
-        this.appendChild(this.colorPalette);
+
+        this.navbar = createElement(this,"nav", "id=blockArtNavbar");
+        this.funcButtonContainer = createElement(this.navbar,"div","id=funcButtonContainer");
+
+        createElement(this.funcButtonContainer, "button", "content=Toggle Gap").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleGap())
+        createElement(this.funcButtonContainer, "button", "content=Save Board").addEventListener("click", this.saveBoard)
+        createElement(this.funcButtonContainer, "button", "content=Scale +").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(1))
+        createElement(this.funcButtonContainer, "button", "content=Scale -").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(-1))
+
+        this.navbar.appendChild(this.colorPalette);
         this.appendChild(this.board);
 
         this.board.toggleGap()
     }
-    __initState (boardState) {
+    __initState(boardState) {
         this.colorPalette.resetColorPallette(boardState.paletteColors);
         this.board.__initState(boardState);
     }
     saveBoard(event) {
         const target = getParent(this, "sk-bl-ockart");
         const boardState = {
-            size : target.blockAmount,
-            paletteColors : target.paletteColors,
+            size: target.board.blockAmount,
+            paletteColors: target.paletteColors,
             gap: target.board.gap,
-            blockValues : target.board.saveBoardState()
+            blockValues: target.board.saveBoardState()
         };
-        
-        const lcApi = new LcAPi("BoardStates");
 
-        lcApi.saveNewBoard(boardState)
+        const lcApi = new LcAPi("BoardStates");
+        const search = window.location.search;
+        if (search) {
+            const id = search.substr(1).split("id=")[1];
+            return lcApi.updateBoard(Number(id), boardState)
+        }
+
+        return lcApi.saveNewBoard(boardState)
     }
 }
 
