@@ -27,9 +27,12 @@ class ColorPalette extends BaseElement {
     constructor(props) {
         super(props);
 
-        this.activeColorBlock = new Block(props);
+        this.blockSize = 42;
+
+        this.activeColorBlock = new Block({...props,blockSize : this.blockSize});
+
         this.availableColorsRow = new Row({
-            blockSize : props.blockSize,
+            blockSize : this.blockSize,
             blockColor : props.blockColor,
             blockAmount : props.paletteColors.length
         });
@@ -41,15 +44,13 @@ class ColorPalette extends BaseElement {
         this.style.flexDirection = "row";
 
         this.activeColorBlock.id = "activeColorBlock"
-        this.activeColorBlock.setSize(this.getMaximumBlockSize())
 
         this.appendChild(this.activeColorBlock);
         this.appendChild(this.availableColorsRow);
+
         this.forEachBlock((block, {
             x
         }) => {
-            // const blockSize = Math.floor(this.getMaximumBlockSize() / 1.2);
-            block.setSize(this.getMaximumBlockSize());
             block.setColor(this.paletteColors[x]);
             block.addEventListener("click", ({
                 target: block
