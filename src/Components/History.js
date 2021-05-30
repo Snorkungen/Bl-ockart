@@ -57,21 +57,22 @@ class BoardHistory {
         // HAHAHHAH HOW is this going to happen
         if (this.lastFillIndex !== null) {
             const lastFillArr = this.history[this.lastFillIndex];
+            console.log(this.lastFillIndex)
             if(lastFillArr) {
                 lastFillArr.push(block);
                 return this.trimHistory();
             }
             else {
                 console.error("Some random error if i cant debug")
-                // console.log(this.lastFillIndex)
-                // console.log(this.history)
+                console.log(this.lastFillIndex)
+                console.log(this.history)
             }
         }
 
         this.history.push([block]);
-        this.lastFillIndex = this.history.lastIndex;
+        this.trimHistory();
+        return this.lastFillIndex = this.history.lastIndex;
 
-        return this.trimHistory();
     }
     fillReset () {
         this.lastFillIndex = null;
