@@ -14,6 +14,7 @@ import {
 import Router, {
     LcAPi
 } from "./Router"
+import Toast from "./Toast";
 const randomRGB = () => {
 
     return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
@@ -120,12 +121,12 @@ class BlockArt extends BaseElement {
         createElement(this.funcButtonContainer, "button", "content=Save Board").addEventListener("click", this.saveBoard)
         createElement(this.funcButtonContainer, "button", "content=Scale +").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(1))
         createElement(this.funcButtonContainer, "button", "content=Scale -").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(-1))
-        createElement(this.funcButtonContainer, "button", "content=ToggleBrush").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleBrushFill())
-
+        createElement(this.funcButtonContainer, "button", "content=ToggleBrush").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleBrushFill());
+        
         this.navbar.appendChild(this.colorPalette);
         this.appendChild(this.board);
 
-        this.board.toggleGap()
+        // this.board.toggleGap();
     }
     __initState(boardState) {
         this.colorPalette.resetColorPallette(boardState.paletteColors);
@@ -144,10 +145,17 @@ class BlockArt extends BaseElement {
         const search = window.location.search;
         if (search) {
             const id = search.substr(1).split("id=")[1];
-            return lcApi.updateBoard(Number(id), boardState)
+            lcApi.updateBoard(Number(id), boardState);
+            return target.Toast.message({
+                ttl : target.ToastTTL,
+                msg : "Board saved!"
+            })
         }
-        alert("Board Saved!");
-        return lcApi.saveNewBoard(boardState)
+        lcApi.saveNewBoard(boardState);
+        return target.Toast.message({
+            ttl : target.ToastTTL,
+            msg : "Board saved!"
+        })
     }
 }
 

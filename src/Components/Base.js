@@ -1,3 +1,5 @@
+import Toast from "./Toast";
+
 function getParent(el, elName) {
     if (el.localName === elName) return el;
     return getParent(el.parentNode, elName);
@@ -15,6 +17,11 @@ class BaseElement extends HTMLElement {
         this.blockColor = blockColor;
 
         this.activeColor = this.blockColor;
+
+        this.Toast = new Toast();
+        this.ToastTTL = 5000;
+
+        this.Modal = document.getElementsByTagName("sk-modal")[0];
     }
     get gap() {
         return this.currgap

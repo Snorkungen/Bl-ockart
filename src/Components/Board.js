@@ -54,7 +54,7 @@ class Board extends BaseElement {
 
         this.setRows(this.blockAmount);
 
-        // this.setGap(0)
+        this.setGap(0)
 
         // Overcomplicating Things but it's a fun challenge
         this.brushFillToggle = false;
@@ -70,7 +70,7 @@ class Board extends BaseElement {
         document.addEventListener("keydown", (event) => {
             // ctrl + z
             if (event.ctrlKey && event.key === "z") this.revertHistory();
-        })
+        });
     }
     setRows(rowAmount) {
         for (let i = 0; i < rowAmount; i++) {
@@ -125,6 +125,7 @@ class Board extends BaseElement {
 
         this.blockAmount += scaleSize;
         this.setGap(this.currgap);
+
         return this.scaleBlocks(this.getMaximumBlockSize())
         // console.log(increaseSizeBoolean)
     }
@@ -299,7 +300,6 @@ class Board extends BaseElement {
             color: "black",
             size: Math.round(this.blockSize * this.brushFillSize)
         })
-
         document.body.appendChild(this.brushTooltip)
 
         return this.brushFillToggle = true;

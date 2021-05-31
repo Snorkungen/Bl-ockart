@@ -15,7 +15,7 @@ class BoardHistory {
     constructor(options = {}) {
 
         this.history = new ArraySk();
-        this.maxHistoryLength = options.maxHistoryLength || 40;
+        this.maxHistoryLength = options.maxHistoryLength || 100;
 
         this.dragLength = options.dragLength || 10;
         this.dragColor = null;
@@ -57,15 +57,12 @@ class BoardHistory {
         // HAHAHHAH HOW is this going to happen
         if (this.lastFillIndex !== null) {
             const lastFillArr = this.history[this.lastFillIndex];
-            console.log(this.lastFillIndex)
             if(lastFillArr) {
                 lastFillArr.push(block);
                 return this.trimHistory();
             }
             else {
                 console.error("Some random error if i cant debug")
-                console.log(this.lastFillIndex)
-                console.log(this.history)
             }
         }
 
