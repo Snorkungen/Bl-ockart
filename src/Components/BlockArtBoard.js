@@ -14,7 +14,7 @@ import {
 import Router, {
     LcAPi
 } from "./Router"
-import Toast from "./Toast";
+import Settings from "./Settings";
 const randomRGB = () => {
 
     return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
@@ -117,16 +117,14 @@ class BlockArt extends BaseElement {
         this.navbar = createElement(this,"nav", "id=blockArtNavbar");
         this.funcButtonContainer = createElement(this.navbar,"div","id=funcButtonContainer");
 
-        createElement(this.funcButtonContainer, "button", "content=Toggle Gap").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleGap())
+        createElement(this.funcButtonContainer, "button", "content=Settings").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").Modal.show(this.Settings))
         createElement(this.funcButtonContainer, "button", "content=Save Board").addEventListener("click", this.saveBoard)
-        createElement(this.funcButtonContainer, "button", "content=Scale +").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(1))
-        createElement(this.funcButtonContainer, "button", "content=Scale -").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.scaleBoard(-1))
         createElement(this.funcButtonContainer, "button", "content=ToggleBrush").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleBrushFill());
         
         this.navbar.appendChild(this.colorPalette);
         this.appendChild(this.board);
 
-        // this.board.toggleGap();
+        this.Settings = new Settings(this.board);
     }
     __initState(boardState) {
         this.colorPalette.resetColorPallette(boardState.paletteColors);

@@ -161,13 +161,14 @@ sk- {
 
         margin: 0 auto;
     }
+
     &modal {
         display: none;
 
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        
+
         position: absolute;
         top: 0;
         left: 0;
@@ -179,26 +180,53 @@ sk- {
             width: 50%;
             min-width: 300px;
             min-height: 300px;
-            
+
             background-color: #fff6af;
-            
+
             display: flex;
             flex-direction: column;
 
-            > nav {
+            >nav {
                 display: flex;
                 justify-content: end;
 
                 padding: 0.4rem;
             }
-            > div {
+
+            >div {
                 display: flex;
                 flex-grow: 2;
-          
-                * {
-                    width:  100%;
-                }
+
             }
+        }
+    }
+
+    &settings {
+        width: 100%;
+
+        background: #343434;
+        color: #f2f2f2;
+
+        .settings-section {
+            > input {
+                width: 66%;
+                padding: 9px;
+                margin: 5px;
+
+                border-radius: 4px;
+                border: none;
+                border-bottom : 2px solid #ffaa22;
+            }
+        }
+
+        button {
+            display: block;
+            margin: 0 auto;
+            width : 60%
+        }
+                    
+        input.unsaved {
+            background: #fff6af;
         }
     }
 }

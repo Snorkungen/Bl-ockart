@@ -94,7 +94,6 @@ class Board extends BaseElement {
 
         if (increaseSizeBoolean) {
             // Increase size
-
             this.forEachRow((row) => {
                 for (let index = 0; index < scaleSize; index++) {
                     row.appendChild(new Block({
@@ -104,12 +103,13 @@ class Board extends BaseElement {
                     }));
                 }
             });
-
-            this.appendChild(new Row({
-                blockAmount: this.blockAmount + scaleSize,
-                blockColor: this.blockColor,
-                blockSize: this.blockSize
-            }));
+            for (let index = 0; index < scaleSize; index++) {
+                this.appendChild(new Row({
+                    blockAmount: this.blockAmount + scaleSize,
+                    blockColor: this.blockColor,
+                    blockSize: this.blockSize
+                }));
+            }
         } else {
             // Decrease size
 
@@ -296,7 +296,7 @@ class Board extends BaseElement {
             return this.brushFillToggle = false;
         }
 
-        this.brushTooltip= new BrushTooltip({
+        this.brushTooltip = new BrushTooltip({
             color: "black",
             size: Math.round(this.blockSize * this.brushFillSize)
         })

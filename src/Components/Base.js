@@ -122,7 +122,7 @@ class BrushTooltip extends HTMLElement {
         this.style.width = size + "px";
         this.style.height = size + "px";
 
-        this.style.borderRadius = "30%"
+        this.style.borderRadius = "50%"
         this.style.border = `thin solid ${this.color}`;
 
         window.addEventListener("mousemove", this.mouseMoveHandler)

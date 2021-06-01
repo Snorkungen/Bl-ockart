@@ -19,8 +19,3 @@ const blockArtBoard = new BlockArtBoard({
 
 root.appendChild(blockArtBoard);
 new Router(blockArtBoard);
-
-const f = document.createElement("p")
-f.innerHTML = "hello world this is so not my thing"
-
-modal.show(f)

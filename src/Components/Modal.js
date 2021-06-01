@@ -1,9 +1,6 @@
 import {
     createElement
 } from "../modules/createElement";
-import {
-    getParent
-} from "./Base";
 
 class Modal extends HTMLElement {
     constructor() {
@@ -33,7 +30,7 @@ class Modal extends HTMLElement {
         const {
             target
         } = event;
-        if(target.localName === "button" || target.localName === "sk-modal") {
+        if((target.localName === "button" && target.parentNode.localName === "nav") || target.localName === "sk-modal") {
             return this.hide()
         }
 
