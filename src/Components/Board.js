@@ -60,6 +60,8 @@ class Board extends BaseElement {
         this.brushFillToggle = false;
         this.brushFillSize = 3;
 
+        this.selectOutlineToggle = true;
+
         // EventListeners
         this.addEventListener("mousedown", this.clickHandler);
         this.addEventListener("mouseover", this.mouseOverHandler)
@@ -179,7 +181,6 @@ class Board extends BaseElement {
     }
 
     clickHandler(event) {
-
         if (event.target.localName !== "sk-block") return;
 
         if (event.ctrlKey) {
@@ -198,6 +199,9 @@ class Board extends BaseElement {
 
         if (this.brushFillToggle) {
             return this.brushFill(event.target)
+        }
+        if (this.selectOutlineToggle) {
+            return this.selectOutline(event.target)
         }
 
         if (event.target.setColor(this.activeColor)) this.history.click(event.target);
@@ -340,7 +344,79 @@ class Board extends BaseElement {
         return this.history.fillReset();
     }
 
+    findEdge(block) {
+        const color = block.color;
 
+        function recursive(block) {
+            const nextBlock = block.nextSibling;
+            if (!nextBlock || nextBlock.color !== color) return block;
+            return recursive(nextBlock);
+        }
+
+        return recursive(block);
+    }
+
+    selectOutline(block) {
+        block = this.findEdge(block);
+        const targetColor = block.color;
+        const outline = [];
+
+        function getSurroundingElements(target) {
+            const topRow = target.parentNode.previousSibling || {
+                children : false
+            };
+            const bottomRow = target.parentNode.nextSibling || {
+                children : false
+            };
+
+            const top = topRow.children[target.blockIndex] || null;
+            const topRight = topRow.children[target.blockIndex + 1] || null;
+            const topLeft = topRow.children[target.blockIndex - 1] || null;
+            const bottom = bottomRow.children[target.blockIndex] || null;
+            const bottomRight = bottomRow.children[target.blockIndex + 1] || null;
+            const bottomLeft = bottomRow.children[target.blockIndex - 1] || null;
+            const right = target.nextSibling;
+            const left = target.previousSibling;
+
+            return [top, bottom, right, left, topRight,topLeft,bottomLeft, bottomRight, bottom];
+        }
+
+        function verifyValidity(target) {
+            if (!!!target) return false;
+            if (targetColor !== target.color) return false;
+            if (outline.includes(target)) return false;
+
+            const opts = getSurroundingElements(target);
+            let x = 0;
+            for (let i = 0; i < opts.length; i++) {
+                const el = opts[i];
+                
+                if (el && el.color === targetColor) x += 1;
+            }   
+ 
+            if(x >= opts.length) return false;
+
+            return true;
+        }
+
+        function finder(target) {
+            if (!target || target === outline[0]) return;
+            outline.push(target);
+
+            const options = getSurroundingElements(target);
+
+            for (let i = 0; i < options.length; i++) {
+                const el = options[i];
+                if (el && verifyValidity(el)) return finder(el)
+            }
+
+            return;
+        }
+
+        finder(block)
+        console.log(outline)
+        return outline.forEach(b => b.classList.add("active"))
+    }
 
     __initState(boardState) {
         this.scaleBoard(boardState.size - this.blockAmount);
