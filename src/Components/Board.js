@@ -363,10 +363,10 @@ class Board extends BaseElement {
 
         function getSurroundingElements(target) {
             const topRow = target.parentNode.previousSibling || {
-                children : false
+                children: false
             };
             const bottomRow = target.parentNode.nextSibling || {
-                children : false
+                children: false
             };
 
             const top = topRow.children[target.blockIndex] || null;
@@ -378,7 +378,7 @@ class Board extends BaseElement {
             const right = target.nextSibling;
             const left = target.previousSibling;
 
-            return [top, bottom, right, left, topRight,topLeft,bottomLeft, bottomRight, bottom];
+            return [top, bottom, right, left, topRight, topLeft, bottomLeft, bottomRight, bottom];
         }
 
         function verifyValidity(target) {
@@ -387,16 +387,18 @@ class Board extends BaseElement {
             if (outline.includes(target)) return false;
 
             const opts = getSurroundingElements(target);
+            
             let x = 0;
             for (let i = 0; i < opts.length; i++) {
                 const el = opts[i];
-                
                 if (el && el.color === targetColor) x += 1;
-            }   
- 
-            if(x >= opts.length) return false;
+            }
 
-            return true;
+            if (x >= opts.length - 1) {
+                console.log(target, x,opts.length)
+                return false;
+            }
+            return [true, x, opts.length];
         }
 
         function finder(target) {
@@ -404,13 +406,26 @@ class Board extends BaseElement {
             outline.push(target);
 
             const options = getSurroundingElements(target);
-
+            const opts = [];
             for (let i = 0; i < options.length; i++) {
                 const el = options[i];
-                if (el && verifyValidity(el)) return finder(el)
+                const valid = verifyValidity(el);
+                // console.log(el,valid)
+                if (el && valid) {
+                    opts.push([el, valid[1], valid[2]]);
+                }
             }
+            opts.filter((value) => outline.includes(value[0]));
+            if (opts.length == 0) return;
 
-            return;
+            const nextTarget = opts.reduce((prev, curr) => {
+                if (!prev || curr[1] < prev[1]) return curr;
+                return prev;
+            })
+
+            // console.log(opts,nextTarget)
+
+            return finder(nextTarget[0]);
         }
 
         finder(block)
