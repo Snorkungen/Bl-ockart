@@ -15,6 +15,7 @@ import Router, {
     LcAPi
 } from "./Router"
 import Settings from "./Settings";
+import Saved from "./Saved";
 const randomRGB = () => {
 
     return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
@@ -117,6 +118,7 @@ class BlockArt extends BaseElement {
         this.navbar = createElement(this,"nav", "id=blockArtNavbar");
         this.funcButtonContainer = createElement(this.navbar,"div","id=funcButtonContainer");
 
+        createElement(this.funcButtonContainer, "button", "content=Boards").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").Modal.show(this.Saved))
         createElement(this.funcButtonContainer, "button", "content=Settings").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").Modal.show(this.Settings))
         createElement(this.funcButtonContainer, "button", "content=Save Board").addEventListener("click", this.saveBoard)
         createElement(this.funcButtonContainer, "button", "content=ToggleBrush").addEventListener("click", (event) => getParent(this, "sk-bl-ockart").board.toggleBrushFill());
@@ -125,6 +127,7 @@ class BlockArt extends BaseElement {
         this.appendChild(this.board);
 
         this.Settings = new Settings(this.board);
+        this.Saved = new Saved(this);
     }
     __initState(boardState) {
         this.colorPalette.resetColorPallette(boardState.paletteColors);

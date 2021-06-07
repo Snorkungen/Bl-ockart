@@ -229,4 +229,37 @@ sk- {
             background: #fff6af;
         }
     }
+    &saved {
+        width: 100%;
+
+        background: #343434;
+        color: #f2f2f2;
+        font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+
+
+        &-icon {
+            margin: 0.4rem;
+
+            display: grid;
+            grid-template-areas: "a b" " c d" "e e";
+
+            > hah {
+                grid-area: e;
+
+                text-align: center;
+            }
+
+            &:hover {
+                border-radius: 4px;
+            }
+            > sk-block:hover {
+                border-radius: 0;
+            }
+        }
+    }
 }
