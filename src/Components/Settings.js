@@ -2,10 +2,11 @@ import {
     createElement
 } from "../modules/createElement";
 import {
-    getParent
+    getParent,
+    ModalContent
 } from "./Base";
 
-class Settings extends HTMLElement {
+class Settings extends ModalContent {
     constructor(board) {
         super();
         this.board = board;
@@ -34,8 +35,12 @@ class Settings extends HTMLElement {
         return this.board.brushFillSize;
     }
     set brushSize(size) {
-        console.log(size)
         return this.board.brushFillSize = size >= 3 ? size : 3;
+    }
+
+    update () {
+        this.blockAmountInput.value = this.blockAmount;
+        this.brushSizeInput.value = this.brushSize
     }
 
     createInput(label, ...inputAttributes) {

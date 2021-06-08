@@ -1,7 +1,8 @@
 import { createElement } from "../modules/createElement";
 import {
     getParent,
-    Block
+    Block,
+    ModalContent
 } from "./Base";
 import BoardRouter, {
     LcAPi
@@ -51,7 +52,7 @@ class BoardIcon extends HTMLElement {
     }
 }
 
-class SavedBoards extends HTMLElement {
+class SavedBoards extends ModalContent {
     constructor(blockArtBoard) {
         super();
         this.blockArtBoard = blockArtBoard;

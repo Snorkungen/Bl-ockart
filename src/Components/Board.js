@@ -145,7 +145,6 @@ class Board extends BaseElement {
                 this.children[this.children.length - 1].remove();
             }
         }
-
         this.blockAmount += scaleSize;
         this.setGap(this.currgap);
 
