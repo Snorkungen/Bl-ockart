@@ -32,6 +32,24 @@ function getSurroundingElements(target) {
     return [top, bottom, right, left, topRight, topLeft, bottomLeft, bottomRight];
 }
 
+function getDirection(el1, el2) {
+    // get relation of target and next target
+
+    // 0 TOP
+    // 1 BOTTOM
+    // 2 RIGHT
+    // 3 LEFT
+    // 4 TOPRIGHT
+    // 5 TOPLEFT
+    // 6 BOTTOMLEFT
+    // 7 BOTTOMRIGHT
+
+    const opts = getSurroundingElements(el1);
+    for (let i = 0; i < opts.length; i++) {
+        if (opts[i] == el2) return i;
+    }
+}
+
 class Row extends BaseElement {
     constructor({
         blockAmount,
@@ -82,7 +100,7 @@ class Board extends BaseElement {
         this.brushFillToggle = false;
         this.brushFillSize = 3;
 
-        this.selectOutlineToggle = true;
+        this.selectOutlineToggle = false;
 
         // EventListeners
         this.addEventListener("mousedown", this.clickHandler);
@@ -206,7 +224,7 @@ class Board extends BaseElement {
 
         if (event.ctrlKey) {
             // fill Logic
-            return this.fillColor(event.target);
+            return this.fillImproved(event.target);
         }
         if (!event.ctrlKey && event.shiftKey) {
             // copy Color;
@@ -404,23 +422,7 @@ class Board extends BaseElement {
                 return block;
             })
 
-            function getDirection(el1, el2) {
-                // get relation of target and next target
 
-                // 0 TOP
-                // 1 BOTTOM
-                // 2 RIGHT
-                // 3 LEFT
-                // 4 TOPRIGHT
-                // 5 TOPLEFT
-                // 6 BOTTOMLEFT
-                // 7 BOTTOMRIGHT
-
-                const opts = getSurroundingElements(el1);
-                for (let i = 0; i < opts.length; i++) {
-                    if (opts[i] == el2) return i;
-                }
-            }
             // Determine if outline full outline is reached
             function determineOutlineEnd(options) {
                 let u = 0;
@@ -452,36 +454,35 @@ class Board extends BaseElement {
             if (previousTarget && target) directionIndex = getDirection(previousTarget, target);
 
             let x = 0;
-            
+
             for (let i = 0; i < options.length; i++) {
                 let score = 0;
                 const el = options[i];
                 // Ranking prioratize following same direction as previous
-                
+
                 if (directionIndex !== null && directionIndex == i) {
                     score += 2
                 }
-                
+
                 getSurroundingElements(el).forEach((block, j) => {
-                    // if(n == 8) console.log(`the score is ${score}`)
                     if (!block || block.color !== targetColor) {
-                        
+
                         if (j < 4) return score += 1.5;
                         return score += 1;
                     }
                     return;
                 })
-                
+
                 if (score > x) {
                     x = score;
                     const first = options[0];
                     options[i] = first;
                     options[0] = el;
                 }
-                
+
             }
 
-            if(!options[0]) return target;
+            if (!options[0]) return target;
             return finder(options[0], n + 1)
         }
 
@@ -495,29 +496,38 @@ class Board extends BaseElement {
         const targetColor = block.color;
         const activeColor = this.activeColor;
 
-        function finder(target) {
+        function finder(target,previousTarget = null) {
             target.setColor(activeColor);
 
             // console.log(target)
 
-            const options = getSurroundingElements(target).filter((block) => {
+            const options = getSurroundingElements(target).map((block) => {
                 if (!block) return false;
                 if (block.color !== targetColor) {
                     return false;
                 }
-                return true;
+                return block;
             })
             if (options.length <= 0) return target;
 
+
             // Rank blocks
+            let directionIndex = null;
+            if (previousTarget && target) directionIndex = getDirection(previousTarget, target);
+
             let x = 0;
             for (let i = 0; i < options.length; i++) {
                 let score = 0;
                 const el = options[i];
+                // Ranking prioratize following same direction as previous
+                if (directionIndex !== null && directionIndex == i) {
+                    score += 1
+                }
+                getSurroundingElements(el).forEach((block, j) => {
+                    if (j < 4) score += 5;
+                    if (!block || block.color !== targetColor && block.color !== activeColor) return score += 1;
 
-                getSurroundingElements(el).forEach((block) => {
-                    if (!block || block.color !== targetColor && block.color !== activeColor) return score += 2;
-                    if (block.color == activeColor) return score += 0.5;
+                    if (block.color == activeColor) return score += 3;
                     return;
                 })
 
@@ -529,8 +539,8 @@ class Board extends BaseElement {
                 }
 
             }
-            // console.log(options,target)
-            return setTimeout(() => finder(options[0]), 50)
+            if(!options[0]) return;
+            return setTimeout(() => finder(options[0],target), 50)
             // return finder(options[0])
         }
 
