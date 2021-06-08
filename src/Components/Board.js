@@ -10,6 +10,27 @@ import {
 } from "../modules/createElement";
 import History from "./History";
 
+
+function getSurroundingElements(target) {
+    const topRow = target.parentNode.previousSibling || {
+        children: false
+    };
+    const bottomRow = target.parentNode.nextSibling || {
+        children: false
+    };
+
+    const top = topRow.children[target.blockIndex] || null;
+    const topRight = topRow.children[target.blockIndex + 1] || null;
+    const topLeft = topRow.children[target.blockIndex - 1] || null;
+    const bottom = bottomRow.children[target.blockIndex] || null;
+    const bottomRight = bottomRow.children[target.blockIndex + 1] || null;
+    const bottomLeft = bottomRow.children[target.blockIndex - 1] || null;
+    const right = target.nextSibling;
+    const left = target.previousSibling;
+
+    return [top, bottom, right, left, topRight, topLeft, bottomLeft, bottomRight];
+}
+
 class Row extends BaseElement {
     constructor({
         blockAmount,
@@ -347,90 +368,142 @@ class Board extends BaseElement {
     findEdge(block) {
         const color = block.color;
 
-        function recursive(block) {
-            const nextBlock = block.nextSibling;
+        function recursiveY(block) {
+            const nextRow = block.parentNode.nextSibling;
+            if (!nextRow) return block;
+            const nextBlock = nextRow.children[block.blockIndex];
             if (!nextBlock || nextBlock.color !== color) return block;
-            return recursive(nextBlock);
+            return recursiveY(nextBlock);
         }
 
-        return recursive(block);
+        function recursiveX(block) {
+            const nextBlock = block.nextSibling;
+            if (!nextBlock || nextBlock.color !== color) return block;
+            return recursiveX(nextBlock);
+        }
+
+        return recursiveY(recursiveX(block));
     }
 
+    // select outline needs a rework in logic
     selectOutline(block) {
         block = this.findEdge(block);
         const targetColor = block.color;
         const outline = [];
 
-        function getSurroundingElements(target) {
-            const topRow = target.parentNode.previousSibling || {
-                children: false
-            };
-            const bottomRow = target.parentNode.nextSibling || {
-                children: false
-            };
+        function finder(target, n = 0) {
+            outline.push(target)
 
-            const top = topRow.children[target.blockIndex] || null;
-            const topRight = topRow.children[target.blockIndex + 1] || null;
-            const topLeft = topRow.children[target.blockIndex - 1] || null;
-            const bottom = bottomRow.children[target.blockIndex] || null;
-            const bottomRight = bottomRow.children[target.blockIndex + 1] || null;
-            const bottomLeft = bottomRow.children[target.blockIndex - 1] || null;
-            const right = target.nextSibling;
-            const left = target.previousSibling;
-
-            return [top, bottom, right, left, topRight, topLeft, bottomLeft, bottomRight, bottom];
-        }
-
-        function verifyValidity(target) {
-            if (!!!target) return false;
-            if (targetColor !== target.color) return false;
-            if (outline.includes(target)) return false;
-
-            const opts = getSurroundingElements(target);
-            
-            let x = 0;
-            for (let i = 0; i < opts.length; i++) {
-                const el = opts[i];
-                if (el && el.color === targetColor) x += 1;
-            }
-
-            if (x >= opts.length - 1) {
-                console.log(target, x,opts.length)
-                return false;
-            }
-            return [true, x, opts.length];
-        }
-
-        function finder(target) {
-            if (!target || target === outline[0]) return;
-            outline.push(target);
-
-            const options = getSurroundingElements(target);
-            const opts = [];
-            for (let i = 0; i < options.length; i++) {
-                const el = options[i];
-                const valid = verifyValidity(el);
-                // console.log(el,valid)
-                if (el && valid) {
-                    opts.push([el, valid[1], valid[2]]);
+            const options = getSurroundingElements(target).filter((block) => {
+                if (!block) return false;
+                if (block.color !== targetColor || outline.includes(block)) {
+                    return false;
                 }
-            }
-            opts.filter((value) => outline.includes(value[0]));
-            if (opts.length == 0) return;
-
-            const nextTarget = opts.reduce((prev, curr) => {
-                if (!prev || curr[1] < prev[1]) return curr;
-                return prev;
+                return true;
             })
 
-            // console.log(opts,nextTarget)
+            // Determine if outline full outline is reached
+            function determineOutlineEnd(options) {
+                let u = 0;
 
-            return finder(nextTarget[0]);
+                for (let i = 0; i < options.length; i++) {
+                    let c = 0;
+                    const option = options[i];
+                    const opts = getSurroundingElements(option);
+                    opts.forEach((el) => {
+                        if (!el ||el.color !== targetColor) c += 1;
+
+
+                    });
+                    u += c;
+                }
+                if (u >1) return false;
+                return true;
+            }
+
+            if (options.length <= 0 || determineOutlineEnd(options)) return target;
+
+            // Rank blocks
+            let x = 0;
+            for (let i = 0; i < options.length; i++) {
+                let score = 0;
+                const el = options[i];
+
+                // Ranking prioratize following same direction as previous
+
+                getSurroundingElements(el).forEach((block,i) => {
+
+                    if (!block || block.color !== targetColor) {
+                        if(i < 4) return score += 1.5;
+                        return score += 1;
+                    } 
+                    return;
+                })
+
+                if (score > x) {
+                    x = score;
+                    const first = options[0];
+                    options[i] = first;
+                    options[0] = el;
+                }
+
+            }
+
+            // get relation of target and next target
+
+            return finder(options[0])
         }
 
         finder(block)
-        console.log(outline)
+        // console.log(outline)
         return outline.forEach(b => b.classList.add("active"))
+    }
+
+    fillImproved(block) {
+        block = this.findEdge(block);
+        const targetColor = block.color;
+        const activeColor = this.activeColor;
+
+        function finder(target) {
+            target.setColor(activeColor);
+
+            // console.log(target)
+
+            const options = getSurroundingElements(target).filter((block) => {
+                if (!block) return false;
+                if (block.color !== targetColor) {
+                    return false;
+                }
+                return true;
+            })
+            if (options.length <= 0) return target;
+
+            // Rank blocks
+            let x = 0;
+            for (let i = 0; i < options.length; i++) {
+                let score = 0;
+                const el = options[i];
+
+                getSurroundingElements(el).forEach((block) => {
+                    if (!block || block.color !== targetColor && block.color !== activeColor) return score += 2;
+                    if (block.color == activeColor) return score += 0.5;
+                    return;
+                })
+
+                if (score > x) {
+                    x = score;
+                    const first = options[0];
+                    options[i] = first;
+                    options[0] = el;
+                }
+
+            }
+            // console.log(options,target)
+            return setTimeout(() => finder(options[0]), 50)
+            // return finder(options[0])
+        }
+
+        return finder(block);
     }
 
     __initState(boardState) {
