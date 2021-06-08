@@ -106,6 +106,12 @@ class Block extends HTMLElement {
     }
 }
 
+class ModalContent extends HTMLElement {
+    update () {
+        return;
+    }
+}
+
 class BrushTooltip extends HTMLElement {
     constructor({
         color,
@@ -144,5 +150,6 @@ export {
     Block,
     BaseElement,
     getParent,
+    ModalContent,
     BrushTooltip
 }

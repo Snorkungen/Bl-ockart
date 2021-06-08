@@ -22,6 +22,7 @@ class Modal extends HTMLElement {
         return this.style.display = "none";
     }
     show (el) {
+        el.update();
         this.content = el;
         return this.style.display = "flex";
     }
