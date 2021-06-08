@@ -12,6 +12,7 @@ import History from "./History";
 
 
 function getSurroundingElements(target) {
+    if (!target) return [];
     const topRow = target.parentNode.previousSibling || {
         children: false
     };
@@ -391,16 +392,35 @@ class Board extends BaseElement {
         const outline = [];
 
         function finder(target, n = 0) {
-            outline.push(target)
+            const previousTarget = outline[outline.length - 1];
 
-            const options = getSurroundingElements(target).filter((block) => {
+            outline.push(target);
+
+            const options = getSurroundingElements(target).map((block) => {
                 if (!block) return false;
                 if (block.color !== targetColor || outline.includes(block)) {
                     return false;
                 }
-                return true;
+                return block;
             })
 
+            function getDirection(el1, el2) {
+                // get relation of target and next target
+
+                // 0 TOP
+                // 1 BOTTOM
+                // 2 RIGHT
+                // 3 LEFT
+                // 4 TOPRIGHT
+                // 5 TOPLEFT
+                // 6 BOTTOMLEFT
+                // 7 BOTTOMRIGHT
+
+                const opts = getSurroundingElements(el1);
+                for (let i = 0; i < opts.length; i++) {
+                    if (opts[i] == el2) return i;
+                }
+            }
             // Determine if outline full outline is reached
             function determineOutlineEnd(options) {
                 let u = 0;
@@ -410,51 +430,63 @@ class Board extends BaseElement {
                     const option = options[i];
                     const opts = getSurroundingElements(option);
                     opts.forEach((el) => {
-                        if (!el ||el.color !== targetColor) c += 1;
-
-
+                        if (!el || el.color !== targetColor) c += 1;
                     });
                     u += c;
                 }
-                if (u >1) return false;
+                if (u > 1) return false;
                 return true;
+            }
+
+
+
+            if (options.length <= 0) {
+                // Here try to backtrack using outline and find a new edge to restart
+                return target;
             }
 
             if (options.length <= 0 || determineOutlineEnd(options)) return target;
 
             // Rank blocks
+            let directionIndex = null;
+            if (previousTarget && target) directionIndex = getDirection(previousTarget, target);
+
             let x = 0;
+            
             for (let i = 0; i < options.length; i++) {
                 let score = 0;
                 const el = options[i];
-
                 // Ranking prioratize following same direction as previous
-
-                getSurroundingElements(el).forEach((block,i) => {
-
+                
+                if (directionIndex !== null && directionIndex == i) {
+                    score += 2
+                }
+                
+                getSurroundingElements(el).forEach((block, j) => {
+                    // if(n == 8) console.log(`the score is ${score}`)
                     if (!block || block.color !== targetColor) {
-                        if(i < 4) return score += 1.5;
+                        
+                        if (j < 4) return score += 1.5;
                         return score += 1;
-                    } 
+                    }
                     return;
                 })
-
+                
                 if (score > x) {
                     x = score;
                     const first = options[0];
                     options[i] = first;
                     options[0] = el;
                 }
-
+                
             }
 
-            // get relation of target and next target
-
-            return finder(options[0])
+            if(!options[0]) return target;
+            return finder(options[0], n + 1)
         }
 
         finder(block)
-        // console.log(outline)
+        console.log(outline)
         return outline.forEach(b => b.classList.add("active"))
     }
 
