@@ -14,13 +14,15 @@ class Row extends BaseElement {
     constructor({
         blockAmount,
         blockSize,
-        blockColor
+        blockColor,
+        rowIndex
     }) {
         super({
             blockAmount,
             blockSize,
             blockColor
         });
+        this.rowIndex = rowIndex;
         this.setBlocks(this.blockAmount);
     }
     setBlocks(blockAmount) {
@@ -46,11 +48,11 @@ class Board extends BaseElement {
             blockSize,
             blockColor
         });
+        this.history = new History();
         this.activeColor = this.blockColor;
 
         this.baseColor = this.blockColor;
 
-        this.history = new History();
 
         this.setRows(this.blockAmount);
 
@@ -107,7 +109,8 @@ class Board extends BaseElement {
                 this.appendChild(new Row({
                     blockAmount: this.blockAmount + scaleSize,
                     blockColor: this.blockColor,
-                    blockSize: this.blockSize
+                    blockSize: this.blockSize,
+                    rowIndex : this.blockAmount + (index + 1)
                 }));
             }
         } else {

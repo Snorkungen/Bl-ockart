@@ -41,7 +41,7 @@ class BaseElement extends HTMLElement {
 
         const smallestN = w < h ? w : h;
 
-        return Math.floor(smallestN / this.blockAmount - 4);
+        return Math.floor(smallestN / this.blockAmount) - 3;
     }
     setActiveColor(color) {
         this.activeColor = color;
