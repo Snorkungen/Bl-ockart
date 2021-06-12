@@ -10,17 +10,61 @@ import {
 } from "../modules/createElement";
 import History from "./History";
 
+
+function getSurroundingElements(target) {
+    if (!target) return [];
+    const topRow = target.parentNode.previousSibling || {
+        children: false
+    };
+    const bottomRow = target.parentNode.nextSibling || {
+        children: false
+    };
+
+    const top = topRow.children[target.blockIndex] || null;
+    const topRight = topRow.children[target.blockIndex + 1] || null;
+    const topLeft = topRow.children[target.blockIndex - 1] || null;
+    const bottom = bottomRow.children[target.blockIndex] || null;
+    const bottomRight = bottomRow.children[target.blockIndex + 1] || null;
+    const bottomLeft = bottomRow.children[target.blockIndex - 1] || null;
+    const right = target.nextSibling;
+    const left = target.previousSibling;
+
+    return [top, bottom, right, left, topRight, topLeft, bottomLeft, bottomRight];
+}
+
+function getDirection(el1, el2) {
+    // get relation of target and next target
+
+    // 0 TOP
+    // 1 BOTTOM
+    // 2 RIGHT
+    // 3 LEFT
+    // 4 TOPRIGHT
+    // 5 TOPLEFT
+    // 6 BOTTOMLEFT
+    // 7 BOTTOMRIGHT
+
+    const opts = getSurroundingElements(el1);
+    for (let i = 0; i < opts.length; i++) {
+        if (opts[i] == el2) return i;
+    }
+}
+
 class Row extends BaseElement {
     constructor({
         blockAmount,
         blockSize,
-        blockColor
+        blockColor,
+        rowIndex
     }) {
         super({
             blockAmount,
             blockSize,
             blockColor
         });
+        if(rowIndex !== undefined) {
+            this.rowIndex = rowIndex;
+        }
         this.setBlocks(this.blockAmount);
     }
     setBlocks(blockAmount) {
@@ -60,6 +104,12 @@ class Board extends BaseElement {
         this.brushFillToggle = false;
         this.brushFillSize = 3;
 
+
+        this.drawCircleToggle = true;
+        this.drawCircleR = 3;
+
+        this.selectOutlineToggle = false;
+
         // EventListeners
         this.addEventListener("mousedown", this.clickHandler);
         this.addEventListener("mouseover", this.mouseOverHandler)
@@ -78,7 +128,8 @@ class Board extends BaseElement {
             this.appendChild(new Row({
                 blockAmount: this.blockAmount,
                 blockColor: this.blockColor,
-                blockSize: this.blockSize
+                blockSize: this.blockSize,
+                rowIndex : i
             }))
         }
         return this;
@@ -178,12 +229,11 @@ class Board extends BaseElement {
     }
 
     clickHandler(event) {
-
         if (event.target.localName !== "sk-block") return;
 
         if (event.ctrlKey) {
             // fill Logic
-            return this.fillColor(event.target);
+            return this.fillImproved(event.target);
         }
         if (!event.ctrlKey && event.shiftKey) {
             // copy Color;
@@ -197,6 +247,12 @@ class Board extends BaseElement {
 
         if (this.brushFillToggle) {
             return this.brushFill(event.target)
+        }
+        if (this.selectOutlineToggle) {
+            return this.selectOutline(event.target)
+        }
+        if(this.drawCircleToggle) {
+            return this.drawCircle(event.target);
         }
 
         if (event.target.setColor(this.activeColor)) this.history.click(event.target);
@@ -339,7 +395,183 @@ class Board extends BaseElement {
         return this.history.fillReset();
     }
 
+    findEdge(block) {
+        const color = block.color;
 
+        function recursiveY(block) {
+            const nextRow = block.parentNode.nextSibling;
+            if (!nextRow) return block;
+            const nextBlock = nextRow.children[block.blockIndex];
+            if (!nextBlock || nextBlock.color !== color) return block;
+            return recursiveY(nextBlock);
+        }
+
+        function recursiveX(block) {
+            const nextBlock = block.nextSibling;
+            if (!nextBlock || nextBlock.color !== color) return block;
+            return recursiveX(nextBlock);
+        }
+
+        return recursiveY(recursiveX(block));
+    }
+
+    // select outline needs a rework in logic
+    selectOutline(block) {
+        block = this.findEdge(block);
+        const targetColor = block.color;
+        const outline = [];
+
+        function finder(target, n = 0) {
+            const previousTarget = outline[outline.length - 1];
+
+            outline.push(target);
+
+            const options = getSurroundingElements(target).map((block) => {
+                if (!block) return false;
+                if (block.color !== targetColor || outline.includes(block)) {
+                    return false;
+                }
+                return block;
+            })
+
+
+            // Determine if outline full outline is reached
+            function determineOutlineEnd(options) {
+                let u = 0;
+
+                for (let i = 0; i < options.length; i++) {
+                    let c = 0;
+                    const option = options[i];
+                    const opts = getSurroundingElements(option);
+                    opts.forEach((el) => {
+                        if (!el || el.color !== targetColor) c += 1;
+                    });
+                    u += c;
+                }
+                if (u > 1) return false;
+                return true;
+            }
+
+
+
+            if (options.length <= 0) {
+                // Here try to backtrack using outline and find a new edge to restart
+                return target;
+            }
+
+            if (options.length <= 0 || determineOutlineEnd(options)) return target;
+
+            // Rank blocks
+            let directionIndex = null;
+            if (previousTarget && target) directionIndex = getDirection(previousTarget, target);
+
+            let x = 0;
+
+            for (let i = 0; i < options.length; i++) {
+                let score = 0;
+                const el = options[i];
+                // Ranking prioratize following same direction as previous
+
+                if (directionIndex !== null && directionIndex == i) {
+                    score += 2
+                }
+
+                getSurroundingElements(el).forEach((block, j) => {
+                    if (!block || block.color !== targetColor) {
+
+                        if (j < 4) return score += 1.5;
+                        return score += 1;
+                    }
+                    return;
+                })
+
+                if (score > x) {
+                    x = score;
+                    const first = options[0];
+                    options[i] = first;
+                    options[0] = el;
+                }
+
+            }
+
+            if (!options[0]) return target;
+            return finder(options[0], n + 1)
+        }
+
+        finder(block)
+        console.log(outline)
+        return outline.forEach(b => b.classList.add("active"))
+    }
+
+    fillImproved(block) {
+        block = this.findEdge(block);
+        const targetColor = block.color;
+        const activeColor = this.activeColor;
+
+        function finder(target, previousTarget = null) {
+            target.setColor(activeColor);
+
+            // console.log(target)
+
+            const options = getSurroundingElements(target).map((block) => {
+                if (!block) return false;
+                if (block.color !== targetColor) {
+                    return false;
+                }
+                return block;
+            })
+            if (options.length <= 0) return target;
+
+
+            // Rank blocks
+            let directionIndex = null;
+            if (previousTarget && target) directionIndex = getDirection(previousTarget, target);
+
+            let x = 0;
+            for (let i = 0; i < options.length; i++) {
+                let score = 0;
+                const el = options[i];
+                // Ranking prioratize following same direction as previous
+                if (directionIndex !== null && directionIndex == i) {
+                    score += 1
+                }
+                getSurroundingElements(el).forEach((block, j) => {
+                    if (j < 4) score += 5;
+                    if (!block || block.color !== targetColor && block.color !== activeColor) return score += 1;
+
+                    if (block.color == activeColor) return score += 3;
+                    return;
+                })
+
+                if (score > x) {
+                    x = score;
+                    const first = options[0];
+                    options[i] = first;
+                    options[0] = el;
+                }
+
+            }
+            if (!options[0]) return;
+            return setTimeout(() => finder(options[0], target), 50)
+            // return finder(options[0])
+        }
+
+        return finder(block);
+    }
+
+    drawCircle(block) {
+        const baseLength = Math.floor(this.drawCircleR / Math.PI) | 1;
+
+        block.setColor(this.activeColor);
+
+       const topRow =  this.children[block.parentNode.rowIndex - 3];
+       if(topRow) {
+        topRow.children[block.blockIndex].setColor(this.activeColor);
+
+       }
+
+
+    };
 
     __initState(boardState) {
         this.scaleBoard(boardState.size - this.blockAmount);
