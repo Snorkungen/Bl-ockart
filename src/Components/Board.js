@@ -54,13 +54,17 @@ class Row extends BaseElement {
     constructor({
         blockAmount,
         blockSize,
-        blockColor
+        blockColor,
+        rowIndex
     }) {
         super({
             blockAmount,
             blockSize,
             blockColor
         });
+        if(rowIndex !== undefined) {
+            this.rowIndex = rowIndex;
+        }
         this.setBlocks(this.blockAmount);
     }
     setBlocks(blockAmount) {
@@ -100,6 +104,10 @@ class Board extends BaseElement {
         this.brushFillToggle = false;
         this.brushFillSize = 3;
 
+
+        this.drawCircleToggle = true;
+        this.drawCircleR = 3;
+
         this.selectOutlineToggle = false;
 
         // EventListeners
@@ -120,7 +128,8 @@ class Board extends BaseElement {
             this.appendChild(new Row({
                 blockAmount: this.blockAmount,
                 blockColor: this.blockColor,
-                blockSize: this.blockSize
+                blockSize: this.blockSize,
+                rowIndex : i
             }))
         }
         return this;
@@ -241,6 +250,9 @@ class Board extends BaseElement {
         }
         if (this.selectOutlineToggle) {
             return this.selectOutline(event.target)
+        }
+        if(this.drawCircleToggle) {
+            return this.drawCircle(event.target);
         }
 
         if (event.target.setColor(this.activeColor)) this.history.click(event.target);
@@ -496,7 +508,7 @@ class Board extends BaseElement {
         const targetColor = block.color;
         const activeColor = this.activeColor;
 
-        function finder(target,previousTarget = null) {
+        function finder(target, previousTarget = null) {
             target.setColor(activeColor);
 
             // console.log(target)
@@ -539,13 +551,27 @@ class Board extends BaseElement {
                 }
 
             }
-            if(!options[0]) return;
-            return setTimeout(() => finder(options[0],target), 50)
+            if (!options[0]) return;
+            return setTimeout(() => finder(options[0], target), 50)
             // return finder(options[0])
         }
 
         return finder(block);
     }
+
+    drawCircle(block) {
+        const baseLength = Math.floor(this.drawCircleR / Math.PI) | 1;
+
+        block.setColor(this.activeColor);
+
+       const topRow =  this.children[block.parentNode.rowIndex - 3];
+       if(topRow) {
+        topRow.children[block.blockIndex].setColor(this.activeColor);
+
+       }
+
+
+    };
 
     __initState(boardState) {
         this.scaleBoard(boardState.size - this.blockAmount);
